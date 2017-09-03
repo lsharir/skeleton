@@ -5,6 +5,7 @@ package generated;
 
 
 import generated.tables.Receipts;
+import generated.tables.Tags;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +66,6 @@ public class Public extends SchemaImpl {
 
 	private final List<Table<?>> getTables0() {
 		return Arrays.<Table<?>>asList(
-			Receipts.RECEIPTS);
+			Receipts.RECEIPTS, Tags.TAGS);
 	}
 }

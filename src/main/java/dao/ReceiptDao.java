@@ -1,6 +1,5 @@
 package dao;
 
-import api.ReceiptResponse;
 import generated.tables.records.ReceiptsRecord;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;

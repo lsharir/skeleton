@@ -13,3 +13,5 @@
 
 # SECURITY ALERT! YOU SHOULD NOT COMMIT YOUR GCP SECURITY FILE!!!
 gc_api_file.json
+
+bin
