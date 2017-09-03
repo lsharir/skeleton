@@ -1,4 +1,4 @@
-ls# WARNING!  I am on a low-bandwidth internet connection and have not been able to build this
+# WARNING!  I am on a low-bandwidth internet connection and have not been able to build this
 # image myself yet.  Almost certainly it won't work, but the ideas are right
 
 
