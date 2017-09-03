@@ -1,12 +1,10 @@
 package controllers;
 
 import api.ReceiptResponse;
-import api.TagReceiptRequest;
 import dao.TagDao;
 import dao.ReceiptDao;
 import generated.tables.records.ReceiptsRecord;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -15,7 +13,7 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Path("/tags/{tag}")
-@Consumes(MediaType.APPLICATION_JSON)
+@Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
 @Produces(MediaType.APPLICATION_JSON)
 public class TagController {
   final TagDao tags;
@@ -27,8 +25,8 @@ public class TagController {
   }
 
   @PUT
-  public void toggleTag(TagReceiptRequest req, @PathParam("tag") String tagName) {
-    tags.toggle(req.id, tagName);
+  public void toggleTag(@NotNull String receiptId, @PathParam("tag") String tagName) {
+    tags.toggle(Integer.parseInt(receiptId), tagName);
   }
 
   @GET
