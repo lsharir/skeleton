@@ -31,6 +31,16 @@ public class ReceiptController {
     @GET
     public List<ReceiptResponse> getReceipts() {
         List<ReceiptsRecord> receiptRecords = receipts.getAllReceipts();
-        return receiptRecords.stream().map(ReceiptResponse::new).collect(toList());
+        System.out.println(receiptRecords);
+        return receiptRecords
+                .stream()
+                .map(ReceiptResponse::new)
+                .map(ReceiptController::addTags)
+                .collect(toList());
+    }
+
+    public static ReceiptResponse addTags(ReceiptResponse receiptResponse) {
+        receiptResponse.tags.add("Test");
+        return receiptResponse;
     }
 }

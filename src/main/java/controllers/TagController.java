@@ -12,7 +12,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-@Path("/tags/{tag}")
+@Path("/tags")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
 @Produces(MediaType.APPLICATION_JSON)
 public class TagController {
@@ -24,11 +24,13 @@ public class TagController {
     this.receipts = receipts;
   }
 
+  @Path("/{tag}")
   @PUT
   public void toggleTag(@NotNull String receiptId, @PathParam("tag") String tagName) {
     tags.toggle(Integer.parseInt(receiptId), tagName);
   }
 
+  @Path("/{tag}")
   @GET
   public List<ReceiptResponse> getReceiptsWithTag(@PathParam("tag") String tagName) {
     List<Integer> receiptsIds = tags.getAllReceiptsIdWithTag(tagName);

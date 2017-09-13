@@ -2,93 +2,20 @@
 <html>
 
 <head>
-    <script data-require="jquery@*" data-semver="3.1.1" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <style>
-        body {
-            text-align: center;
-        }
-
-        video {
-            width: 400px;
-            height: 300px;
-            border: 1px solid black;
-        }
-
-        #vidwrap {
-            margin: 20px 0;
-        }
-
-        #start, #snapshot {
-            height: 3em;
-        }
-    </style>
-    <script>
-        let imageCapture;
-
-        function attachMediaStream(mediaStream) {
-            $('video')[0].srcObject = mediaStream;
-
-            // Saving the track allows us to capture a photo
-            const track = mediaStream.getVideoTracks()[0];
-            imageCapture = new ImageCapture(track);
-        }
-
-        function startVideo() {
-            navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "environment"}}})
-                .then(attachMediaStream)
-                .catch(error => {
-                    navigator.mediaDevices.getUserMedia({video: true})
-                        .then(attachMediaStream)
-                        .catch(error => {
-                            console.log('you are fooked');
-                        })
-                })
-        }
-
-        function takeSnapshot() {
-            // create a CANVAS element that is same size as the image
-            imageCapture.takePhoto()
-                .then(blob => createImageBitmap(blob))
-                .then(img => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-
-                    canvas.getContext('2d').drawImage(img, 0, 0);
-                    const base64EncodedImageData = canvas.toDataURL('image/png').split(',')[1];
-                    $.ajax({
-                        url: "/images",
-                        type: "POST",
-                        data: base64EncodedImageData,
-                        contentType: "text/plain",
-                        success: function() {},
-                   })
-                    .then(response => {
-                        $('video').after(`<div>got response: <pre>${JSON.stringify(response)}</pre></div>`);
-                    })
-                    .always(() => console.log('request complete'));
-
-                    // For debugging, you can uncomment this to see the frame that was captured
-                    // $('BODY').append(canvas);
-                });
-
-        }
-
-        $(function () {
-            $('#start').on('click', startVideo);
-            $('video').on('play', () => $('#snapshot').prop('disabled', false));
-            $('#snapshot').on('click', takeSnapshot);
-        });
-    </script>
+    <script data-require="jquery@*" data-semver="3.1.1"
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/main.js"></script>
+    <title>ls873</title>
 </head>
 
 <body>
-<button id="start">Start Video</button>
-<button id="snapshot" disabled="true">Take a Snapshot!</button>
-<br>
-<div id="vidwrap">
-    <video autoplay></video>
+<div id="container">
+    <h1>My receipts</h1>
+    <div class="button">+</div>
+    <div id="receiptList">
     </div>
+</div>
 </body>
 
 </html>

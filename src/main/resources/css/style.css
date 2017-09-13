@@ -1,0 +1,27 @@
+#container {
+    border: 1px solid brown;
+}
+
+h1 {
+    float: left;
+}
+
+.button {
+    background-color: #55A;
+    border: 1px solid #229;
+    width: 100px;
+    float: right;
+    font-size: 2em;
+    color: white;
+    text-align: center;
+}
+
+#receiptList {
+    border: 1px solid green;
+    clear: both;
+}
+
+.receipt {
+    background-color: #eee;
+    margin-bottom: 5px;
+}
