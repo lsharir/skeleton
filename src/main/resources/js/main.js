@@ -2,30 +2,30 @@ $(function () {
     const api = receiptsApi();
     const ctrl = receiptsController(api);
 
-    ctrl.getReceipts()
-        .then(function (receipts) {
-            console.log(receipts);
-            for (var i = 0; i < receipts.length; i++) {
-                var receipt = receipts[i];
-                $(`<div class="receipt">${receipt.merchantName}<div><span class="receiptTag">t1</span></div></div>`)
-                    .appendTo($("#receiptList"));
-            }
-        });
-
-    setTimeout(function() {
-        ctrl.postReceipt({
-            merchant: 'Amazon',
-            amount: 200
-        }).then(function (id) {
-            setTimeout(function () {
-                console.log('added ' + id);
-                ctrl.tagReceipt(id, 'test')
-                    .then(function () {
-                        console.log('success tagging "test" on ' + id);
-                    })
-            }, 5000)
-        });
-    }, 1000)
+    // ctrl.getReceipts()
+    //     .then(function (receipts) {
+    //         console.log(receipts);
+    //         for (var i = 0; i < receipts.length; i++) {
+    //             var receipt = receipts[i];
+    //             $(`<div class="receipt">${receipt.merchantName}<div><span class="receiptTag">t1</span></div></div>`)
+    //                 .appendTo($("#receiptList"));
+    //         }
+    //     });
+    //
+    // setTimeout(function() {
+    //     ctrl.postReceipt({
+    //         merchant: 'Amazon',
+    //         amount: 200
+    //     }).then(function (id) {
+    //         setTimeout(function () {
+    //             console.log('added ' + id);
+    //             ctrl.tagReceipt(id, 'another')
+    //                 .then(function () {
+    //                     console.log('success tagging "another" on ' + id);
+    //                 })
+    //         }, 5000)
+    //     });
+    // }, 1000)
 
 });
 

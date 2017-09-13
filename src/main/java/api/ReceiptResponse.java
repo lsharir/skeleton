@@ -31,7 +31,7 @@ public class ReceiptResponse {
     Time created;
 
     @JsonProperty
-    public List<String> tags;
+    List<String> tags;
 
     public ReceiptResponse(ReceiptsRecord dbRecord) {
         this.merchantName = dbRecord.getMerchant();
@@ -39,5 +39,13 @@ public class ReceiptResponse {
         this.created = dbRecord.getUploaded();
         this.id = dbRecord.getId();
         this.tags = new ArrayList<>();
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
 }
