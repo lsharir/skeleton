@@ -11,8 +11,26 @@
 
 <body>
 <div id="container">
-    <h1>My receipts</h1>
-    <div class="button">+</div>
+    <div class="navbar">
+        <div class="app-title">Receipts</div>
+        <button id="add-receipt">+</button>
+    </div>
+
+    <div id="new-receipt-container">
+        <input type="text" id="merchant" placeholder="merchant">
+        <input type="number" id="amount" placeholder="amount">
+        <button id="cancel-receipt">cancel</button>
+        <button id="save-receipt" class="primary">save</button>
+        <div id="input-error"></div>
+    </div>
+
+    <div class="receiptList-header">
+        <span>Time</span>
+        <span>Merchant</span>
+        <span>Amount</span>
+        <span class="receiptTag">Tags</span>
+    </div>
+
     <div id="receiptList">
     </div>
 </div>
