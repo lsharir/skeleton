@@ -33,7 +33,7 @@ input:focus {
     border-color: #2196F3;
 }
 
-input.tag-input {
+input.tag_input {
     width: 5rem;
     margin: 0.25rem;
     padding: 0.25rem 0.5rem;
@@ -119,13 +119,25 @@ input.tag-input {
 .tag-chip {
     margin: 0.25rem;
     border-radius: 1rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem 1.25rem 0.25rem 0.5rem;
     text-transform: none;
     color: #616161;
     border: none;
     background: #E0E0E0;
     cursor: pointer;
     white-space: nowrap;
+    position: relative;
+}
+
+.tag-chip::after {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    margin: 0 0.5rem;
+    line-height: 0;
+    display: inline-block;
+    transform: translateY(-50%);
+    content: 'x'
 }
 
 .tag-chip:hover {
@@ -135,7 +147,11 @@ input.tag-input {
 button.tag-chip {
     background: #2196F3;
     color: white;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem 1.25rem 0.25rem 0.5rem;
     margin: 0.25rem;
     box-shadow: none;
+}
+
+button.tag-chip::after {
+    content: '+'
 }

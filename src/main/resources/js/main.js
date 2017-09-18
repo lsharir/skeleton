@@ -114,7 +114,7 @@ function getElements() {
 function getElementsGenerator(tagReceipt) {
     function addTagInput(receipt) {
         const tag = $(`
-            <input class="tag-input" type="text" style="display: none;">
+            <input class="tag_input" type="text" style="display: none;">
         `);
 
         tag.keypress(function (event) {
@@ -133,7 +133,7 @@ function getElementsGenerator(tagReceipt) {
     function tagSpan(receipt, tagName) {
         const tagSpanElement = $(
             `<span class="tagValue tag-chip">
-                ${tagName} x
+                ${tagName}
             </span>
         `);
 
@@ -151,7 +151,7 @@ function getElementsGenerator(tagReceipt) {
 
     function addTagInputToggle(addTagInputElement) {
         const addTagInputElementToggle = $(`
-            <button class="add-tag tag-chip">add +</button>
+            <button class="add-tag tag-chip">add</button>
         `);
 
         addTagInputElementToggle.click(function () {
