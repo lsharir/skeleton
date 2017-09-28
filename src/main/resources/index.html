@@ -4,6 +4,7 @@
 <head>
     <script data-require="jquery@*" data-semver="3.1.1"
             src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
     <link rel="stylesheet" href="css/style.css">
     <script src="js/main.js"></script>
     <title>ls873</title>
@@ -13,7 +14,18 @@
 <div id="container">
     <div class="navbar">
         <div class="app-title">Receipts</div>
-        <button id="add-receipt">+</button>
+        <div class="app-nav">
+            <button id="add-receipt">+</button>
+            <button id="start-camera">
+                <span class="camera-icon"></span>
+            </button>
+        </div>
+    </div>
+
+    <div id="new-snapshot-container">
+        <div id="video-element-container"></div>
+        <button id="cancel-pic">cancel</button>
+        <button id="take-pic" disabled="true">snap</button>
     </div>
 
     <div id="new-receipt-container">
