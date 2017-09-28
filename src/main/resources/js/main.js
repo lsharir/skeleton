@@ -65,10 +65,63 @@ $(function () {
             })
     }
 
-    connectElementsBehaviours(elements, {
+    function startVideo(videoElement) {
+        const camState = {};
+
+        function connectMediaStream(mediaStream) {
+            videoElement[0].srcObject = mediaStream;
+
+            // Saving the track allows us to capture a photo
+            const track = mediaStream.getVideoTracks()[0];
+            camState.imageCapture = new ImageCapture(track);
+        }
+
+        navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "environment"}}})
+            .then(connectMediaStream)
+            .catch(error => {
+                navigator.mediaDevices.getUserMedia({video: true})
+                    .then(connectMediaStream)
+                    .catch(error => {
+                        console.error(error);
+                    })
+            });
+
+        return camState;
+    }
+
+    function takeSnapshot(camState) {
+        return camState.imageCapture.takePhoto()
+            .then(blob => createImageBitmap(blob))
+            .then(img => {
+                var canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                canvas.getContext('2d').drawImage(img, 0, 0);
+                const dataUrl = canvas.toDataURL('image/png');
+
+                return dataUrl.split(',')[1];
+            });
+    }
+
+    function handleReceiptSnapshot(snapshot) {
+        ctrl.postReceiptImage(snapshot)
+            .then((receipt) => {
+                behaviorsCtrl.resetSnapshotContainer();
+                behaviorsCtrl.showCreateReceiptContainer(receipt.merchantName, receipt.amount);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
+    var behaviorsCtrl = connectElementsBehaviours(elements, {
         saveNewReceipt: saveNewReceipt,
-        cleanNewReceipt: cleanNewReceipt
-    });
+        cleanNewReceipt: cleanNewReceipt,
+        startVideo: startVideo,
+        takeSnapshot: takeSnapshot,
+        handleReceiptSnapshot: handleReceiptSnapshot
+    }, elGen);
 
 
     /** Load the receipts initially */
@@ -81,11 +134,12 @@ $(function () {
 
 });
 
-function connectElementsBehaviours(elements, behaviours) {
+function connectElementsBehaviours(elements, behaviours, elementsGenerator) {
     elements.addReceiptButton.click(function () {
         if (elements.createReceiptContainer.is(':visible')) {
             behaviours.cleanNewReceipt();
         }
+        resetSnapshotContainer();
         elements.createReceiptContainer.slideToggle();
     });
 
@@ -95,19 +149,75 @@ function connectElementsBehaviours(elements, behaviours) {
 
     });
 
+    const showCreateReceiptContainer = (merchantName, amount) => {
+        elements.createReceiptContainer.slideDown();
+        elements.merchantInput.val(merchantName || elements.merchantInput.val());
+        elements.amountInput.val(amount || elements.amountInput.val());
+    };
+
+    const resetSnapshotContainer = () => {
+        if (!elements.createSnapshotContainer.is(':visible')) {
+            return;
+        }
+
+        elements.createSnapshotContainer.slideUp(() => {
+            elements.videoElement.remove();
+            elements.takePicButton.off('click');
+            elements.takePicButton.prop('disabled', true);
+        });
+    };
+
+    elements.startCameraButton.click(function () {
+        if (elements.videoElement && elements.videoElement.parents().length !== 0) {
+            return resetSnapshotContainer();
+        }
+
+        elements.createReceiptContainer.slideUp();
+        elements.videoElement = elementsGenerator.videoElement();
+        elements.videoElement.on('play', () => elements.takePicButton.prop('disabled', false));
+        elements.videoElementContainer.append(elements.videoElement);
+
+        const camState = behaviours.startVideo(elements.videoElement);
+        elements.createSnapshotContainer.slideDown();
+
+        elements.takePicButton.click(() => {
+            behaviours.takeSnapshot(camState)
+                .then((data) => {
+                    behaviours.handleReceiptSnapshot(data);
+                });
+
+            resetSnapshotContainer();
+        })
+    });
+
+    elements.cancelPicButton.click(function () {
+        resetSnapshotContainer();
+    });
+
+
     elements.saveReceiptButton.click(behaviours.saveNewReceipt);
+
+    return {
+        resetSnapshotContainer : resetSnapshotContainer,
+        showCreateReceiptContainer: showCreateReceiptContainer
+    };
 }
 
 function getElements() {
     return {
+        startCameraButton: $('#start-camera'),
+        takePicButton: $('#take-pic'),
+        cancelPicButton: $('#cancel-pic'),
         addReceiptButton: $('#add-receipt'),
         createReceiptContainer: $('#new-receipt-container'),
+        createSnapshotContainer: $('#new-snapshot-container'),
         cancelReceiptButton: $('#cancel-receipt'),
         saveReceiptButton: $('#save-receipt'),
         merchantInput: $('#merchant'),
         amountInput: $('#amount'),
         receiptList: $('#receiptList'),
-        inputErrorElement: $('#input-error')
+        inputErrorElement: $('#input-error'),
+        videoElementContainer: $('#video-element-container')
     };
 }
 
@@ -183,14 +293,21 @@ function getElementsGenerator(tagReceipt) {
         });
 
         tagColumn.append(addTagInputElement);
-        tagColumn.append(addTagInputElementToggle)
+        tagColumn.append(addTagInputElementToggle);
 
 
         return row;
     }
 
+    function videoElement() {
+        const element = $('<video></video>');
+        element[0].autoplay = true;
+        return element;
+    }
+
     return {
-        receiptRow: receiptRow
+        receiptRow: receiptRow,
+        videoElement: videoElement
     };
 }
 
@@ -205,7 +322,7 @@ function getDigestFunction(elements, elementsGenerator) {
 
 function receiptsController(api) {
     function postReceipt(receipt) {
-        return api.POST("/receipts", receipt);
+        return api.POST("/receipts", receipt, true);
     }
 
     function getReceipts() {
@@ -213,24 +330,31 @@ function receiptsController(api) {
     }
 
     function tagReceipt(id, tagName) {
-        return api.PUT('/tags/' + tagName, id);
+        return api.PUT('/tags/' + tagName, id, {
+            stringify: true
+        });
+    }
+
+    function postReceiptImage(snapshot) {
+        return api.POST('/images', snapshot , false, 'text/plain');
     }
 
     return {
         postReceipt: postReceipt,
         getReceipts: getReceipts,
-        tagReceipt: tagReceipt
+        tagReceipt: tagReceipt,
+        postReceiptImage: postReceiptImage
     }
 }
 
 function receiptsApi() {
-    function POST(url, data) {
+    function POST(url, data, stringify = false, contentType = 'application/json') {
         return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'POST',
                 url: url,
-                contentType: 'application/json',
-                data: JSON.stringify(data),
+                contentType: contentType,
+                data: stringify ? JSON.stringify(data) : data,
                 complete: resolve,
                 error: reject
             });
@@ -243,13 +367,13 @@ function receiptsApi() {
         });
     }
 
-    function PUT(url, data) {
+    function PUT(url, data, stringify = false, contentType = 'application/json') {
         return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'PUT',
                 url: url,
-                contentType: 'application/json',
-                data: JSON.stringify(data),
+                contentType: contentType,
+                data: stringify ? JSON.stringify(data) : data,
                 complete: resolve,
                 error: reject
             });
@@ -309,8 +433,6 @@ function receiptsReducer() {
                 state = Object.assign({}, state, {receipts: []});
                 break;
         }
-
-        console.log(state.receipts.length + ' receipts');
 
         return state;
     }

@@ -60,7 +60,7 @@ input.tag_input {
     color: #424242;
 }
 
-#new-receipt-container {
+#new-receipt-container, #new-snapshot-container {
     display: none;
     text-align: right;
     position: relative;
@@ -154,4 +154,19 @@ button.tag-chip {
 
 button.tag-chip::after {
     content: '+'
+}
+
+.app-nav {
+    display: flex;
+
+}
+
+.camera-icon {
+    display: inline-block;
+    background-image: url('https://de9xxjhuq2c2j.cloudfront.net/apps/live-20170417-1/images/emoji/emoji-android-32.tiny.png');
+    width: 28px;
+    height: 26px;
+    background-position: 0 -13310px;
+    background-repeat: no-repeat;
+    overflow: hidden;
 }

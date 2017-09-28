@@ -3,14 +3,16 @@ package controllers;
 import api.ReceiptSuggestionResponse;
 import com.google.cloud.vision.v1.*;
 import com.google.protobuf.ByteString;
+
 import java.math.BigDecimal;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
-import static java.lang.System.out;
 
 @Path("/images")
 @Consumes(MediaType.TEXT_PLAIN)
@@ -28,12 +30,12 @@ public class ReceiptImageController {
     /**
      * This borrows heavily from the Google Vision API Docs.  See:
      * https://cloud.google.com/vision/docs/detecting-fulltext
-     *
+     * <p>
      * YOU SHOULD MODIFY THIS METHOD TO RETURN A ReceiptSuggestionResponse:
-     *
+     * <p>
      * public class ReceiptSuggestionResponse {
-     *     String merchantName;
-     *     String amount;
+     * String merchantName;
+     * String amount;
      * }
      */
     @POST
@@ -44,19 +46,54 @@ public class ReceiptImageController {
         try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
             BatchAnnotateImagesResponse responses = client.batchAnnotateImages(Collections.singletonList(request));
             AnnotateImageResponse res = responses.getResponses(0);
+            List<EntityAnnotation> annotationList = res.getTextAnnotationsList();
 
             String merchantName = null;
             BigDecimal amount = null;
 
-            // Your Algo Here!!
-            // Sort text annotations by bounding polygon.  Top-most non-decimal text is the merchant
-            // bottom-most decimal text is the total amount
-            for (EntityAnnotation annotation : res.getTextAnnotationsList()) {
-                out.printf("Position : %s\n", annotation.getBoundingPoly());
-                out.printf("Text: %s\n", annotation.getDescription());
+            EntityAnnotation topMost = null;
+            EntityAnnotation bottomMost = null;
+
+            EntityAnnotation fullPhrase = null;
+
+            List<EntityAnnotation> wordList;
+
+            if (annotationList.size() > 0) {
+                fullPhrase = annotationList.get(0);
+                wordList = annotationList.subList(1, annotationList.size());
+            } else {
+                return new ReceiptSuggestionResponse(null, null);
             }
 
-            //TextAnnotation fullTextAnnotation = res.getFullTextAnnotation();
+            for (EntityAnnotation word : wordList) {
+                Integer placement = word.getBoundingPoly().getVertices(0).getY();
+
+                if (bottomMost == null || topMost == null) {
+                    bottomMost = word;
+                    topMost = word;
+                }
+
+                if (placement >= bottomMost.getBoundingPoly().getVertices(0).getY()) {
+                    try {
+                        amount = new BigDecimal(word.getDescription());
+                        bottomMost = word;
+                    } catch (Exception err) {
+                    }
+                }
+
+                if (
+                        placement <= topMost.getBoundingPoly().getVertices(0).getY() &&
+                                (merchantName == null || word.getDescription().split("\n").length <= merchantName.split("\n").length)
+                        ) {
+                    topMost = word;
+                    merchantName = word.getDescription();
+                }
+            }
+
+            if (merchantName == null) {
+                merchantName = fullPhrase.getDescription();
+            }
+
             return new ReceiptSuggestionResponse(merchantName, amount);
         }
     }
