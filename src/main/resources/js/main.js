@@ -90,8 +90,10 @@ $(function () {
     }
 
     function takeSnapshot(camState) {
-        return camState.imageCapture.takePhoto()
-            .then(blob => createImageBitmap(blob))
+        const framePromise = camState.imageCapture.grabFrame ? camState.imageCapture.grabFrame() : undefined;
+        const photoPromise = camState.imageCapture.takePhoto ? camState.imageCapture.takePhoto().then(blob => createImageBitmap(blob)) : undefined;
+
+        return (framePromise || photoPromise)
             .then(img => {
                 var canvas = document.createElement('canvas');
                 canvas.width = img.width;
@@ -242,9 +244,7 @@ function getElementsGenerator(tagReceipt) {
 
     function tagSpan(receipt, tagName) {
         const tagSpanElement = $(
-            `<span class="tagValue tag-chip">
-                ${tagName}
-            </span>
+            `<span class="tagValue tag-chip">${tagName}</span>
         `);
 
         tagSpanElement.click(function () {

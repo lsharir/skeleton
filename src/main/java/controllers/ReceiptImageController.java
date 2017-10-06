@@ -51,7 +51,6 @@ public class ReceiptImageController {
             String merchantName = null;
             BigDecimal amount = null;
 
-            EntityAnnotation topMost = null;
             EntityAnnotation bottomMost = null;
 
             EntityAnnotation fullPhrase = null;
@@ -61,6 +60,7 @@ public class ReceiptImageController {
             if (annotationList.size() > 0) {
                 fullPhrase = annotationList.get(0);
                 wordList = annotationList.subList(1, annotationList.size());
+                merchantName = fullPhrase.getDescription().split("\n")[0];
             } else {
                 return new ReceiptSuggestionResponse(null, null);
             }
@@ -68,25 +68,16 @@ public class ReceiptImageController {
             for (EntityAnnotation word : wordList) {
                 Integer placement = word.getBoundingPoly().getVertices(0).getY();
 
-                if (bottomMost == null || topMost == null) {
+                if (bottomMost == null) {
                     bottomMost = word;
-                    topMost = word;
                 }
 
                 if (placement >= bottomMost.getBoundingPoly().getVertices(0).getY()) {
                     try {
-                        amount = new BigDecimal(word.getDescription());
+                        amount = new BigDecimal(word.getDescription().replaceAll("[$,]", ""));
                         bottomMost = word;
                     } catch (Exception err) {
                     }
-                }
-
-                if (
-                        placement <= topMost.getBoundingPoly().getVertices(0).getY() &&
-                                (merchantName == null || word.getDescription().split("\n").length <= merchantName.split("\n").length)
-                        ) {
-                    topMost = word;
-                    merchantName = word.getDescription();
                 }
             }
 
